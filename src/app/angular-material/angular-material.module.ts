@@ -31,7 +31,8 @@ import {MatSelectModule} from '@angular/material/select';
     MatSidenavModule,
     MatMenuModule,
     MatProgressBarModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDialogModule,
   ],
   exports: [
     MatCardModule,
@@ -43,11 +44,13 @@ import {MatSelectModule} from '@angular/material/select';
     MatToolbarModule,
     MatProgressSpinnerModule,
     MatDialogModule,
+    MatFormFieldModule,
     MatTabsModule,
     MatSidenavModule,
     MatMenuModule,
     MatProgressBarModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDialogModule,
   ],
 })
 

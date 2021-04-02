@@ -8,7 +8,7 @@
       <mat-error *ngIf="emailInput.invalid">Please enter a valid email.</mat-error>
     </mat-form-field>
 
-        <mat-form-field>
+    <mat-form-field>
       <input matInput name="username" ngModel type="input" placeholder="nom" #usernameImput="ngModel" required>
       <mat-error *ngIf="usernameImput.invalid">Please enter a valid username.</mat-error>
     </mat-form-field>
@@ -18,15 +18,16 @@
       <mat-error *ngIf="passwordInput.invalid">Please enter a valid password.</mat-error>
     </mat-form-field>
 
-<mat-form-field appearance="fill">
-  <mat-label>Selectionner un role</mat-label>
+    <mat-form-field appearance="fill">
+      <mat-label>Selectionner un role</mat-label>
 
-  <mat-select name="role" ngModel #role="ngModel" required (change)="selectChangeHandler($event)">
-    <mat-option *ngFor="let role of roles" [value]="role">
-      {{role}}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
+      <mat-select name="role" ngModel #role="ngModel" required>
+        <mat-option *ngFor="let role of roles" [value]="role">
+          {{role}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="role.invalid">Please select a role.</mat-error>
+    </mat-form-field>
 
     <button mat-raised-button color="accent" type="submit" *ngIf="!isLoading">Créer un compte</button>
   </form>

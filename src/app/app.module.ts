@@ -19,6 +19,9 @@ import { SignupComponent } from './auth/signup/signup.component';
 import { AdminComponent } from './dashboard/admin/admin.component';
 import { UserComponent } from './dashboard/user/user.component';
 import { PageNotFoundComponent } from './navigation/page-not-found/page-not-found.component';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import { AlertDialogComponent } from './shared/alertDialog/AlertDialog.component';
 
 
 
@@ -34,9 +37,12 @@ import { PageNotFoundComponent } from './navigation/page-not-found/page-not-foun
     SignupComponent,
     AdminComponent,
     UserComponent,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    AlertDialogComponent
   ],
   imports: [
+    HttpClientModule,
+    CommonModule,
     RouterModule,
     BrowserModule,
     BrowserAnimationsModule,
@@ -45,7 +51,9 @@ import { PageNotFoundComponent } from './navigation/page-not-found/page-not-foun
     AppRoutingModule,
     FormsModule
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: [
+  ],
+  bootstrap: [AppComponent],
+  entryComponents: [AlertDialogComponent],
 })
 export class AppModule { }

@@ -1,24 +1,33 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Router } from "@angular/router";
-import { Subject } from "rxjs";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 
-import { AuthData } from "./auth-data.model";
+import { AuthData } from './auth-data.model';
 
-import { environment } from "../../environments/environment";
+import { environment } from '../../environments/environment';
+import { MatDialog } from '@angular/material/dialog';
+import { AlertDialogComponent } from '../shared/alertDialog/AlertDialog.component';
 
-const BACKEND_URL = environment.apiUrl + "/user/";
+const BACKEND_URL = environment.apiUrl + '/users/';
 
-@Injectable({ providedIn: "root" })
-
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private isAuthenticated = false;
   private token: string;
+
+  private isAuthenticated = false;
+
   private tokenTimer: any;
+
   private userId: string;
+
   private authStatusListener = new Subject<boolean>();
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private dialog: MatDialog
+  ) {}
 
   getToken() {
     return this.token;
@@ -36,42 +45,95 @@ export class AuthService {
     return this.authStatusListener.asObservable();
   }
 
-  createUserAdmin(email: string, password: string, username: string) {
-    const authData: AuthData = {email: email, username: username, role: "admin", password: password}
-    this.http.post(BACKEND_URL + "/signup", authData).subscribe(
+  //SERVICE QUI VA AFFICHER MA DIALOG BOX AVEC LE MESSAGE DE MON CHOIX
+  alertBox(data) {
+    this.dialog.open(AlertDialogComponent, {
+      data: {
+        message: data,
+        buttonText: {
+          cancel: 'Ok',
+        },
+      },
+    });
+  }
+
+  //CREATION D'UN USER OU ADMIN
+  //VOIR COMMNET MODIFIER SI ADMIN
+  createUser(username: string, email: string, password: string, role: string) {
+    const authData: AuthData = {
+      username: username,
+      email: email,
+      password: password,
+      role: role,
+    };
+
+    const roleEndPoint =
+      role === 'admin' ? 'registrer-admin' : 'registrer-user';
+
+    this.http.post(BACKEND_URL + roleEndPoint, authData).subscribe(
       (response) => {
-        this.router.navigate(["/dashboard/:adminId"]);
+        this.alertBox(response);
+        console.log(response);
+
+        this.router.navigate(['/login']);
       },
       (error) => {
-        this.authStatusListener.next(false);
+        this.alertBox(error.error.message);
+
+        // this.authStatusListener.next(false);
       }
     );
   }
 
   login(email: string, password: string) {
-    const authData: AuthData = { email: email, password: password };
+    let user = {
+      email,
+      password,
+    };
+
     this.http
-      .post<{ token: string; expiresIn: number; userId: string }>(
-        BACKEND_URL + "/login",
-        authData
-      )
+      .post<{
+        user_id: string;
+        username: string;
+        role: string;
+        email: string;
+        token: string;
+        expiresIn: number;
+      }>(BACKEND_URL + 'login', user)
       .subscribe(
         (response) => {
+          this.alertBox(JSON.stringify(response));
           const token = response.token;
           this.token = token;
           if (token) {
+            //durée d'expiration
             const expiresInDuration = response.expiresIn;
             this.setAuthTimer(expiresInDuration);
+            console.log('EXPIRATION IN DURATION:', expiresInDuration);
+
             this.isAuthenticated = true;
-            this.userId = response.userId;
-            this.authStatusListener.next(true);
+            this.userId = response.user_id;
+            console.log('USERID:', this.userId);
+
+
+            // this.authStatusListener.next(true);
+
             const now = new Date();
+            console.log('DATE NOW', now);
+
             const expirationDate = new Date(
               now.getTime() + expiresInDuration * 1000
             );
-            console.log(expirationDate);
+
+            console.log('EXPIRATION DATE:', expirationDate);
+
             this.saveAuthData(token, expirationDate, this.userId);
-            this.router.navigate(["/"]);
+
+            if(response.role === 'admin') {
+              console.log('ROLE:', response.role)
+              this.router.navigate(["/admin-dashboard"]);
+            }
+            this.router.navigate(["/login-dashboard"]);
           }
         },
         (error) => {
@@ -103,32 +165,33 @@ export class AuthService {
     this.userId = null;
     clearTimeout(this.tokenTimer);
     this.clearAuthData();
-    this.router.navigate(["/"]);
+    this.router.navigate(['/']);
   }
 
+  //FONCTION DEFINIR UN TIMER POUR LE TOKEN
   private setAuthTimer(duration: number) {
-    console.log("Setting timer: " + duration);
+    console.log('Setting timer: ' + duration);
     this.tokenTimer = setTimeout(() => {
       this.logout();
     }, duration * 1000);
   }
 
   private saveAuthData(token: string, expirationDate: Date, userId: string) {
-    localStorage.setItem("token", token);
-    localStorage.setItem("expiration", expirationDate.toISOString());
-    localStorage.setItem("userId", userId);
+    localStorage.setItem('token', token);
+    localStorage.setItem('expiration', expirationDate.toISOString());
+    localStorage.setItem('userId', userId);
   }
 
   private clearAuthData() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("expiration");
-    localStorage.removeItem("userId");
+    localStorage.removeItem('token');
+    localStorage.removeItem('expiration');
+    localStorage.removeItem('userId');
   }
 
   private getAuthData() {
-    const token = localStorage.getItem("token");
-    const expirationDate = localStorage.getItem("expiration");
-    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem('token');
+    const expirationDate = localStorage.getItem('expiration');
+    const userId = localStorage.getItem('userId');
     if (!token || !expirationDate) {
       return;
     }

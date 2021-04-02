@@ -1,6 +1,6 @@
 export interface AuthData {
-  email: String;
   username: String;
-  role: string;
+  email: String;
   password: string;
+  role: string;
 }
